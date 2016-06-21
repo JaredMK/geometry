@@ -10,6 +10,7 @@ logFilesFolder='/Geom_for_code'
 path=os.path.dirname(os.path.realpath(__file__))
 pathorigin=path     #used to save workbook in this location
 excelFilePathName='/geometry_logFile_data.xlsx'
+gjfFileFolder='/gjf_files'
 
 #columns for each variable in workbook
 colFileInformation='A'
@@ -35,6 +36,23 @@ worksheet[colHarmonicFrequency+'1']='Harmonic Frequency'
 
 def run():
     dataExtract(path)
+
+def gjfFile(name,charge,multiplicity,geometry):
+    basisSets=['Aug-cc-pvDz','Aug-cc-pvTz','Aug-cc-pvQz','Aug-cc-pv5z']
+    if not os.path.exists(path+gjfFileFolder):
+            os.makedirs(path+gjfFileFolder)
+
+    geometryText=''
+    for g in geometry:
+        geometryText+=g
+        geometryText+='\n'
+
+
+    for b in basisSets:
+        file=open(path+gjfFileFolder+'/'+str(name)+'_'+b[-2]+".gfj","w")
+        file.write('%nprocshared=8 \n#CCSD(T)/ '+b+' tran=abcd\n\n'\
+        +str(name)+'\n\n'+str(charge)+' '+str(multiplicity)+'\n'+geometryText+'\n\n')
+        file.close()
 
 
 def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency):
@@ -81,10 +99,30 @@ def dataExtract(path):
                 while splitLog[x+y]!='Frequencies':
                     y+=1
                 harmonicFrequency=splitLog[x+y+2]
+            if splitLog[x]=='Redundant':
+                y=0
+                while splitLog[x+y]!='Recover':
+                    y+=1
+                geometry=splitLog[x+6:x+y-1]
+
 
             x+=1
         fileInformation=currentFile
+        #find the name of the file using fileInformation
+        n=-1
+        lastLetterName=None
+        firstLetterName=None
+        while n*-1<len(fileInformation):
+            if fileInformation[n]=='.' and fileInformation[n+1]=='c':
+                lastLetterName=n
+            if fileInformation[n]=='/':
+                firstLetterName=n+1
+            if lastLetterName!=None and firstLetterName!=None:
+                break
+            n-=1
+        name=fileInformation[firstLetterName:lastLetterName]
 
+        gjfFile(name,charge,multiplicity,geometry)
         writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency)
         row+=1
     workbook.save(pathorigin + excelFilePathName)     #saves file
