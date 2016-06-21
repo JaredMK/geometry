@@ -5,7 +5,7 @@ import stat      #implemented to make files executable
 workbook = openpyxl.Workbook()  #creates openpyxl workbook
 
 #logFilesFolder is name of folder containing log files
-logFilesFolder='/Geom_for_code'
+logFilesFolder='/Final_Geom_Extra'
 
 '''path to this file'''
 path=os.path.dirname(os.path.realpath(__file__))
@@ -37,28 +37,31 @@ worksheet[colSymmetry+'1']='Symmetry'
 worksheet[colHarmonicFrequency+'1']='Harmonic Frequency'
 worksheet[colLastLine+'1']='Last Line'
 
-parametersFileText='large\n4\n\n4gb'
+parametersFileText='large\n8\n\n8gb'
 
 gaussCommand='rung09'
+
+userCharge=1
+userMultiplicity=2
 
 def run():
     dataExtract(path)
 
 def gjfFile(name,charge,multiplicity,geometry):
     basisSets=['Aug-cc-pvDz','Aug-cc-pvTz','Aug-cc-pvQz','Aug-cc-pv5z']
-    if not os.path.exists(path+gjfFileFolder):
-            os.makedirs(path+gjfFileFolder)
-            if not os.path.exists(path+gjfFileFolder+'/parameters'):
-                file=open(path+gjfFileFolder+'/parameters', "w")
+    if not os.path.exists(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)):
+            os.makedirs(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity))
+            if not os.path.exists(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/parameters'):
+                file=open(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/parameters', "w")
                 file.write(parametersFileText)
                 file.close()
-                st=os.stat(path+gjfFileFolder+'/parameters')
-                os.chmod(path+gjfFileFolder+'/parameters', st.st_mode | stat.S_IEXEC)   #makes file exectubale
-            if not os.path.exists(path+gjfFileFolder+'/run'):
-                file=open(path+gjfFileFolder+'/run', "w")
+                st=os.stat(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/parameters')
+                os.chmod(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/parameters', st.st_mode | stat.S_IEXEC)   #makes file exectubale
+            if not os.path.exists(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run'):
+                file=open(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run', "w")
                 file.close()
-                st=os.stat(path+gjfFileFolder+'/run')
-                os.chmod(path+gjfFileFolder+'/run', st.st_mode | stat.S_IEXEC)   #makes file exectubale
+                st=os.stat(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run')
+                os.chmod(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run', st.st_mode | stat.S_IEXEC)   #makes file exectubale
 
 
     geometryText=''
@@ -68,12 +71,13 @@ def gjfFile(name,charge,multiplicity,geometry):
 
 
     for b in basisSets:
-        file=open(path+gjfFileFolder+'/'+str(name)+'_'+b[-2]+".gjf","w")
+        file=open(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/'+str(name)+'_'+b[-2]+".gjf","w")
         file.write('%nprocshared=8 \n#CCSD(T)/ '+b+' tran=abcd\n\n'\
-        +str(name)+'\n\n'+str(charge)+' '+str(multiplicity)+'\n'+geometryText+'\n\n')
+        #+str(name)+'\n\n'+str(charge)+' '+str(multiplicity)+'\n'+geometryText+'\n\n')
+        +str(name)+'\n\n'+str(userCharge)+' '+str(userMultiplicity)+'\n'+geometryText+'\n\n')
         file.close()
 
-    file = open(path+gjfFileFolder+'/run', "a")     #a lets you append file
+    file = open(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run', "a")     #a lets you append file
     file.write(gaussCommand+' '+str(name)+'_'+b[-2]+".gjf < parameters"+'\n')
     file.close()
 
@@ -126,16 +130,20 @@ def dataExtract(path):
                 y=0
                 while splitLog[x+y]!='Recover':
                     y+=1
-                geometry=splitLog[x+6:x+y-1]
+                geometry=splitLog[x+6:x+y]
 
             x+=1
         y=-1
         lastLine=None
-        while lastLine==None:
+        while y>-15:
             if splitLog[y]=='Normal':
                 lastLine=splitLog[y:]
                 lastLine=' '.join(lastLine)
+                break
             y-=1
+        if lastLine==None:
+            lastLine=splitLog[-15:]
+            lastLine=' '.join(lastLine)
         fileInformation=currentFile
         #find the name of the file using fileInformation
         n=-1
