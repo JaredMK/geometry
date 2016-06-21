@@ -1,6 +1,7 @@
 import os
 import re
 import openpyxl
+import stat      #implemented to make files executable
 workbook = openpyxl.Workbook()  #creates openpyxl workbook
 
 #logFilesFolder is name of folder containing log files
@@ -34,6 +35,10 @@ worksheet[colBasis+'1']='Basis'
 worksheet[colSymmetry+'1']='Symmetry'
 worksheet[colHarmonicFrequency+'1']='Harmonic Frequency'
 
+parametersFileText='large\n4\n\n4gb'
+
+gaussCommand='rung09'
+
 def run():
     dataExtract(path)
 
@@ -41,6 +46,18 @@ def gjfFile(name,charge,multiplicity,geometry):
     basisSets=['Aug-cc-pvDz','Aug-cc-pvTz','Aug-cc-pvQz','Aug-cc-pv5z']
     if not os.path.exists(path+gjfFileFolder):
             os.makedirs(path+gjfFileFolder)
+            if not os.path.exists(path+gjfFileFolder+'/parameters'):
+                file=open(path+gjfFileFolder+'/parameters', "w")
+                file.write(parametersFileText)
+                file.close()
+                st=os.stat(path+gjfFileFolder+'/parameters')
+                os.chmod(path+gjfFileFolder+'/parameters', st.st_mode | stat.S_IEXEC)   #makes file exectubale
+            if not os.path.exists(path+gjfFileFolder+'/run'):
+                file=open(path+gjfFileFolder+'/run', "w")
+                file.close()
+                st=os.stat(path+gjfFileFolder+'/run')
+                os.chmod(path+gjfFileFolder+'/run', st.st_mode | stat.S_IEXEC)   #makes file exectubale
+
 
     geometryText=''
     for g in geometry:
@@ -49,11 +66,14 @@ def gjfFile(name,charge,multiplicity,geometry):
 
 
     for b in basisSets:
-        file=open(path+gjfFileFolder+'/'+str(name)+'_'+b[-2]+".gfj","w")
+        file=open(path+gjfFileFolder+'/'+str(name)+'_'+b[-2]+".gjf","w")
         file.write('%nprocshared=8 \n#CCSD(T)/ '+b+' tran=abcd\n\n'\
         +str(name)+'\n\n'+str(charge)+' '+str(multiplicity)+'\n'+geometryText+'\n\n')
         file.close()
 
+    file = open(path+gjfFileFolder+'/run', "a")     #a lets you append file
+    file.write(gaussCommand+' '+str(name)+'_'+b[-2]+".gjf < parameters"+'\n')
+    file.close()
 
 def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency):
     '''writesDataToExcel takes is called by dataExtract. It takes in the variables found in
