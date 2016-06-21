@@ -21,6 +21,7 @@ colMultiplicity='D'
 colBasis='E'
 colSymmetry='F'
 colHarmonicFrequency='G'
+colLastLine='H'
 
 #prepare openpyxl first
 worksheet=workbook.active
@@ -34,6 +35,7 @@ worksheet[colMultiplicity+'1']='Multiplicity'
 worksheet[colBasis+'1']='Basis'
 worksheet[colSymmetry+'1']='Symmetry'
 worksheet[colHarmonicFrequency+'1']='Harmonic Frequency'
+worksheet[colLastLine+'1']='Last Line'
 
 parametersFileText='large\n4\n\n4gb'
 
@@ -75,7 +77,7 @@ def gjfFile(name,charge,multiplicity,geometry):
     file.write(gaussCommand+' '+str(name)+'_'+b[-2]+".gjf < parameters"+'\n')
     file.close()
 
-def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency):
+def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency,lastLine):
     '''writesDataToExcel takes is called by dataExtract. It takes in the variables found in
     data extraction and writes it into the openpyxl workbook'''
 
@@ -86,6 +88,7 @@ def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symm
     worksheet[colBasis+str(row)]=basis
     worksheet[colSymmetry+str(row)]=symmetry
     worksheet[colHarmonicFrequency+str(row)]=harmonicFrequency
+    worksheet[colLastLine+str(row)]=lastLine
 
 
 def dataExtract(path):
@@ -125,8 +128,14 @@ def dataExtract(path):
                     y+=1
                 geometry=splitLog[x+6:x+y-1]
 
-
             x+=1
+        y=-1
+        lastLine=None
+        while lastLine==None:
+            if splitLog[y]=='Normal':
+                lastLine=splitLog[y:]
+                lastLine=' '.join(lastLine)
+            y-=1
         fileInformation=currentFile
         #find the name of the file using fileInformation
         n=-1
@@ -143,6 +152,6 @@ def dataExtract(path):
         name=fileInformation[firstLetterName:lastLetterName]
 
         gjfFile(name,charge,multiplicity,geometry)
-        writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency)
+        writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency,lastLine)
         row+=1
     workbook.save(pathorigin + excelFilePathName)     #saves file
