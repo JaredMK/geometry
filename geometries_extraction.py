@@ -36,6 +36,20 @@ worksheet[colHarmonicFrequency+'1']='Harmonic Frequency'
 def run():
     dataExtract(path)
 
+
+def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency):
+    '''writesDataToExcel takes is called by dataExtract. It takes in the variables found in
+    data extraction and writes it into the openpyxl workbook'''
+
+    worksheet[colFileInformation+str(row)]=fileInformation
+    worksheet[colMolecule+str(row)]=molecule
+    worksheet[colCharge+str(row)]=charge
+    worksheet[colMultiplicity+str(row)]=multiplicity
+    worksheet[colBasis+str(row)]=basis
+    worksheet[colSymmetry+str(row)]=symmetry
+    worksheet[colHarmonicFrequency+str(row)]=harmonicFrequency
+
+
 def dataExtract(path):
 
     row=2
@@ -74,15 +88,3 @@ def dataExtract(path):
         writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency)
         row+=1
     workbook.save(pathorigin + excelFilePathName)     #saves file
-
-def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency):
-    '''writesDataToExcel takes is called by dataExtract. It takes in the variables found in
-    data extraction and writes it into the openpyxl workbook'''
-
-    worksheet[colFileInformation+str(row)]=fileInformation
-    worksheet[colMolecule+str(row)]=molecule
-    worksheet[colCharge+str(row)]=charge
-    worksheet[colMultiplicity+str(row)]=multiplicity
-    worksheet[colBasis+str(row)]=basis
-    worksheet[colSymmetry+str(row)]=symmetry
-    worksheet[colHarmonicFrequency+str(row)]=harmonicFrequency
