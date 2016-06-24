@@ -41,8 +41,8 @@ parametersFileText='large\n8\n\n8gb'
 
 gaussCommand='rung09'
 
-userCharge=1
-userMultiplicity=2
+userCharge=0
+userMultiplicity=1
 
 def run():
     dataExtract(path)
@@ -77,9 +77,10 @@ def gjfFile(name,charge,multiplicity,geometry):
         +str(name)+'\n\n'+str(userCharge)+' '+str(userMultiplicity)+'\n'+geometryText+'\n\n')
         file.close()
 
-    file = open(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run', "a")     #a lets you append file
-    file.write(gaussCommand+' '+str(name)+'_'+b[-2]+".gjf < parameters"+'\n')
-    file.close()
+        runfile = open(path+gjfFileFolder+'/'+str(userCharge)+str(userMultiplicity)+'/run', "a")     #a lets you append file
+        runfile.write(gaussCommand+' '+str(name)+'_'+b[-2]+".gjf < parameters"+'\n')
+        print(gaussCommand+' '+str(name)+'_'+b[-2]+".gjf < parameters"+'\n')
+        #runfile.close()
 
 def writeDataToExcel(row,fileInformation,molecule,charge,multiplicity,basis,symmetry,harmonicFrequency,lastLine):
     '''writesDataToExcel takes is called by dataExtract. It takes in the variables found in
